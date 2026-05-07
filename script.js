@@ -8,6 +8,7 @@ let calAnio = new Date().getFullYear();
 let sidebarAbierto = true;
 
 
+
 const DEFAULT_CATS = [
     { id: 'personal', nombre: 'Personal', icono: '👤' },
     { id: 'trabajo',  nombre: 'Trabajo',  icono: '💼' },
