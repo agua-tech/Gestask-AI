@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>Gestask AI | Gestor de tareas</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='12' width='56' height='44' rx='6' fill='%23F4D9B8'/%3E%3Crect x='4' y='12' width='56' height='12' rx='6' fill='%23FF5A00'/%3E%3Crect x='12' y='4' width='6' height='16' rx='3' fill='%236B3A2E'/%3E%3Crect x='26' y='4' width='6' height='16' rx='3' fill='%236B3A2E'/%3E%3Crect x='40' y='4' width='6' height='16' rx='3' fill='%236B3A2E'/%3E%3Ccircle cx='16' cy='30' r='2.5' fill='%236B3A2E'/%3E%3Ccircle cx='28' cy='30' r='2.5' fill='%236B3A2E'/%3E%3Ccircle cx='40' cy='30' r='2.5' fill='%236B3A2E'/%3E%3Ccircle cx='16' cy='40' r='2.5' fill='%236B3A2E'/%3E%3Ccircle cx='28' cy='40' r='2.5' fill='%236B3A2E'/%3E%3Ccircle cx='40' cy='40' r='2.5' fill='%236B3A2E'/%3E%3Ccircle cx='44' cy='44' r='14' fill='%232BB3C0'/%3E%3Ccircle cx='44' cy='44' r='10' fill='%23F4D9B8'/%3E%3Cline x1='44' y1='44' x2='44' y2='38' stroke='%236B3A2E' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='44' y1='44' x2='49' y2='44' stroke='%236B3A2E' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <span class="logo-icon">🕰️</span>
+            <span class="logo-text">Gestask AI</span>
+        </div>
+        <p class="auth-sub">Para los que anotan todo antes de olvidarlo 👀</p>
+
+        <div class="auth-tabs" role="tablist" aria-label="Acceso">
+            <button class="auth-tab active" type="button" id="tabLogin" onclick="switchAuthTab('login')" role="tab" aria-controls="loginForm" aria-selected="true">Iniciar sesión</button>
+            <button class="auth-tab" type="button" id="tabRegister" onclick="switchAuthTab('register')" role="tab" aria-controls="registerForm" aria-selected="false">Registrarse</button>
+        </div>
+
+        
+        <div id="loginForm" class="auth-form" role="tabpanel" aria-labelledby="tabLogin">
+            <input type="text" id="loginUser" placeholder="Usuario" class="auth-input" autocomplete="username">
+            <div class="pass-wrap">
+                <input type="password" id="loginPass" placeholder="Contraseña" class="auth-input" autocomplete="current-password">
+                <button class="pass-toggle" type="button" onclick="togglePassVisible('loginPass', this)" title="Mostrar u ocultar contraseña" aria-label="Mostrar u ocultar contraseña"><i data-lucide="eye"></i></button>
+            </div>
+            <p class="auth-error" id="loginError" aria-live="polite"></p>
+            <button class="auth-btn" type="button" onclick="login()">Entrar</button>
+        </div>
+
+        <div id="registerForm" class="auth-form hidden" role="tabpanel" aria-labelledby="tabRegister">
+            <input type="text" id="regUser" placeholder="Usuario" class="auth-input" autocomplete="username">
+            <div class="pass-wrap">
+                <input type="password" id="regPass" placeholder="Contraseña" class="auth-input" autocomplete="new-password">
+                <button class="pass-toggle" type="button" onclick="togglePassVisible('regPass', this)" title="Mostrar u ocultar contraseña" aria-label="Mostrar u ocultar contraseña"><i data-lucide="eye"></i></button>
+            </div>
+            <div class="pass-wrap">
+                <input type="password" id="regPass2" placeholder="Confirmar contraseña" class="auth-input" autocomplete="new-password">
+                <button class="pass-toggle" type="button" onclick="togglePassVisible('regPass2', this)" title="Mostrar u ocultar contraseña" aria-label="Mostrar u ocultar contraseña"><i data-lucide="eye"></i></button>
+            </div>
+            <p class="auth-error" id="regError" aria-live="polite"></p>
+            <button class="auth-btn" type="button" onclick="register()">Crear cuenta</button>
+        </div>
+    </div>
+</div>
+
+<div id="appScreen" class="app-screen hidden">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <span class="logo-icon" aria-hidden="true">
+                <svg width="32" height="32" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="12" width="56" height="44" rx="6" fill="#F4D9B8"/>
+                    <rect x="4" y="12" width="56" height="12" rx="6" fill="#FF5A00"/>
+                    <rect x="12" y="4" width="6" height="16" rx="3" fill="#6B3A2E"/>
+                    <rect x="26" y="4" width="6" height="16" rx="3" fill="#6B3A2E"/>
+                    <rect x="40" y="4" width="6" height="16" rx="3" fill="#6B3A2E"/>
+                    <circle cx="16" cy="30" r="2.5" fill="#6B3A2E"/>
+                    <circle cx="28" cy="30" r="2.5" fill="#6B3A2E"/>
+                    <circle cx="40" cy="30" r="2.5" fill="#6B3A2E"/>
+                    <circle cx="16" cy="40" r="2.5" fill="#6B3A2E"/>
+                    <circle cx="28" cy="40" r="2.5" fill="#6B3A2E"/>
+                    <circle cx="40" cy="40" r="2.5" fill="#6B3A2E"/>
+                    <!-- Reloj -->
+                    <circle cx="44" cy="44" r="14" fill="#2BB3C0"/>
+                    <circle cx="44" cy="44" r="10" fill="#F4D9B8"/>
+                    <line x1="44" y1="44" x2="44" y2="38" stroke="#6B3A2E" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="44" y1="44" x2="49" y2="44" stroke="#6B3A2E" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <span class="logo-text">Gestask AI</span>
+        </div>
+
+        <div class="user-info">
+            <div class="avatar" id="sidebarAvatar"></div>
+            <div>
+                <p class="username" id="sidebarUser"></p>
+                <p class="user-role">en modo focus ✦</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebarNav">
+            <p class="nav-label">Categorías</p>
+
+            <div id="navCategorias"></div>
+
+            <div class="cat-add-row">
+                <input type="text" id="nuevaCatInput" placeholder="Nueva categoría..." class="cat-add-input" onkeypress="if(event.key==='Enter')agregarCategoria()" aria-label="Nueva categoría">
+                <button class="cat-add-btn" type="button" onclick="agregarCategoria()" title="Agregar categoría" aria-label="Agregar categoría"><i data-lucide="plus"></i></button>
+            </div>
+
+            <p class="nav-label nav-label--spaced">Estado</p>
+            <button class="nav-item" type="button" onclick="filtrarEstado('pendientes')" data-estado="pendientes">
+                <span class="nav-icon"><i data-lucide="clock"></i></span>
+                <span class="nav-text">Pendientes</span>
+            </button>
+            <button class="nav-item" type="button" onclick="filtrarEstado('completadas')" data-estado="completadas">
+                <span class="nav-icon"><i data-lucide="check-circle-2"></i></span>
+                <span class="nav-text">Completadas</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="tour-repeat-btn" type="button" onclick="iniciarTour()" title="Recorrido de la app" aria-label="Ver recorrido de la app"><i data-lucide="compass"></i></button>
+            <button class="theme-toggle" type="button" onclick="toggleTema()" title="Cambiar tema" aria-label="Cambiar tema">
+                <span id="themeIcon"><i data-lucide="sun"></i></span>
+            </button>
+            <button class="config-open-btn" type="button" onclick="abrirConfigModal()" title="Configuración" aria-label="Abrir configuración"><i data-lucide="settings"></i></button>
+            <button class="logout-btn" type="button" onclick="logout()">Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar" id="topbarEl">
+            <div class="topbar-left">
+                <button class="hamburger" type="button" onclick="toggleSidebar()" title="Menú" aria-label="Abrir o cerrar menú"><i data-lucide="menu"></i></button>
+                <div>
+                    <h1 class="page-title" id="pageTitle">Todas las tareas</h1>
+                    <p class="page-date" id="pageDate"></p>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-wrap" id="searchWrapEl">
+                    <span class="search-ico"><i data-lucide="search"></i></span>
+                    <input type="text" id="buscador" placeholder="Buscar tarea... (/)" class="search-input" oninput="buscarTareas()" aria-label="Buscar tarea">
+                </div>
+
+                <div class="sort-wrap">
+                    <select id="ordenSelect" class="sort-select" onchange="renderTareas()" aria-label="Ordenar tareas">
+                        <option value="fecha-creacion">Más recientes</option>
+                        <option value="fecha-limite">Por fecha límite</option>
+                        <option value="prioridad">Por prioridad</option>
+                        <option value="nombre">Alfabético</option>
+                    </select>
+                </div>
+
+                <button class="ia-open-btn ks-tooltip" type="button" onclick="abrirMocoaModal()"
+                    title="Abrir Asistente IA (A)" aria-label="Abrir Asistente Mocoa AI">
+                    <span class="ia-btn-ico"><i data-lucide="bot"></i></span>
+                    <span class="ia-btn-txt">Asistente</span>
+                    <kbd class="ks-badge">A</kbd>
+                </button>
+                <button class="modo-hoy-btn ks-tooltip" type="button" onclick="abrirModoHoy()"
+                    title="Modo Hoy (H)" aria-label="Abrir Modo Hoy">
+                    <span class="ia-btn-ico"><i data-lucide="target"></i></span>
+                    <span class="ia-btn-txt">Modo Hoy</span>
+                    <kbd class="ks-badge">H</kbd>
+                </button>
+                <button class="ks-help-btn" type="button" onclick="abrirAtajosModal()"
+                    title="Atajos de teclado (?)" aria-label="Ver atajos de teclado">
+                    <kbd>?</kbd>
+                </button>
+            </div>
+        </header>
+
+        <!-- 1. Focus del día -->
+        <section class="hero-focus" id="heroFocusEl">
+            <button class="hero-toggle-btn" id="heroToggleBtn" type="button" onclick="toggleHeroCompacto()" aria-expanded="true" aria-controls="heroFocusEl" aria-label="Reducir resumen" title="Reducir resumen">
+                <span class="hero-toggle-icon"><i data-lucide="chevron-up"></i></span>
+            </button>
+            <div class="hero-focus-main">
+                <p class="hero-kicker">Focus del día</p>
+                <h2 class="hero-title">Haz que hoy cuente</h2>
+                <p class="hero-copy" id="heroCopy">Organiza el día en bloques cortos y completa una tarea clave primero.</p>
+                <div class="hero-progress-wrap" aria-label="Progreso diario">
+                    <div class="hero-progress-track">
+                        <div class="hero-progress-bar" id="heroProgressBar"></div>
+                    </div>
+                    <span class="hero-progress-num" id="heroProgressNum">0%</span>
+                </div>
+            </div>
+            <div class="hero-focus-grid">
+                <article class="hero-pill">
+                    <span class="hero-pill-k">Pendientes</span>
+                    <strong class="hero-pill-v" id="heroPendingNum">0</strong>
+                </article>
+                <article class="hero-pill">
+                    <span class="hero-pill-k">Completadas hoy</span>
+                    <strong class="hero-pill-v" id="heroDoneNum">0</strong>
+                </article>
+                <article class="hero-pill">
+                    <span class="hero-pill-k">Vencidas</span>
+                    <strong class="hero-pill-v" id="heroOverdueNum">0</strong>
+                </article>
+            </div>
+        </section>
+
+        <!-- 2. Input rápido -->
+        <div class="add-task-panel" id="addTaskPanelEl">
+            <div class="add-task-row">
+                <!-- Input principal siempre visible -->
+                <input type="text" id="tareaInput" placeholder="Nueva tarea..." class="task-input" onkeypress="if(event.key==='Enter')agregarTarea()" aria-label="Nueva tarea">
+
+                <!-- Botón de opciones avanzadas (solo visible en móvil) -->
+                <button
+                    class="task-extras-toggle"
+                    type="button"
+                    aria-label="Mostrar opciones"
+                    aria-expanded="false"
+                    onclick="toggleTaskExtras(this)">
+                    <i data-lucide="sliders-horizontal"></i>
+                    <span class="task-extras-toggle-txt">Opciones</span>
+                </button>
+
+                <!-- Botón Agregar siempre visible -->
+                <button class="add-btn" type="button" onclick="agregarTarea()"><i data-lucide="plus"></i> Agregar</button>
+            </div>
+
+            <!-- Panel de opciones avanzadas: siempre visible en desktop, colapsable en móvil -->
+            <div class="task-extras" id="taskExtras">
+                <div class="task-field-group task-field-group-priority">
+                    <div class="task-field-label-row">
+                        <label for="prioridadSelect" class="task-field-label">Importancia</label>
+                        <button type="button" class="help-icon-btn js-tooltip-trigger" aria-label="Ayuda sobre importancia" aria-expanded="false" data-tooltip-target="tooltipImportancia">
+                            <i data-lucide="circle-help"></i>
+                        </button>
+                    </div>
+                    <select id="prioridadSelect" class="task-select prio-select" aria-label="Importancia de la tarea">
+                        <option value="alta">🔴 Alta (urgente)</option>
+                        <option value="media" selected>🟡 Media (importante)</option>
+                        <option value="baja">🟢 Baja (puede esperar)</option>
+                    </select>
+                    <div class="help-tooltip" id="tooltipImportancia" role="tooltip">
+                        <p><strong>Prioriza así:</strong> Alta = hoy o bloquea; Media = valor esta semana; Baja = puede esperar.</p>
+                    </div>
+                </div>
+
+                <div class="task-field-group task-field-group-energy">
+                    <div class="task-field-label-row">
+                        <label for="energiaSelect" class="task-field-label">Energía</label>
+                        <button type="button" class="help-icon-btn js-tooltip-trigger" aria-label="Ayuda sobre nivel de energía" aria-expanded="false" data-tooltip-target="tooltipEnergia">
+                            <i data-lucide="circle-help"></i>
+                        </button>
+                    </div>
+                    <select id="energiaSelect" class="task-select energia-select" aria-label="Nivel de energía requerida">
+                        <option value="alta">⚡ Alta (máximo enfoque)</option>
+                        <option value="normal" selected>🔋 Media (concentración normal)</option>
+                        <option value="baja">💤 Baja (modo automático)</option>
+                    </select>
+                    <div class="help-tooltip" id="tooltipEnergia" role="tooltip">
+                        <p><strong>Elige foco:</strong> Alta = trabajo profundo; Media = coordinación; Baja = tareas repetitivas.</p>
+                    </div>
+                </div>
+
+                <select id="categoriaSelect" class="task-select" aria-label="Categoría"></select>
+                <div class="date-wrap">
+                    <label class="date-label-mobile" for="fechaInput">Fecha límite</label>
+                    <input type="date" id="fechaInput" class="task-date" aria-label="Fecha límite">
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 3. Contenido: lista de tareas -->
+        <div class="tasks-area">
+            <ul id="listaTareas" class="task-list"></ul>
+            <div id="mensajeVacio" class="empty-state hidden">
+                <div class="empty-icon"><i data-lucide="clipboard-list"></i></div>
+                <p>Por aquí está todo tranquilo.</p>
+                <p class="empty-sub">Agrega algo antes de que se te olvide.</p>
+                <button class="ks-empty-cta" type="button" onclick="document.getElementById('tareaInput').focus()">
+                    Crear una tarea ahora
+                </button>
+            </div>
+        </div>
+
+        <!-- stats-bar oculta (display:none vía CSS) — el JS la necesita para escribir los valores -->
+        <div class="stats-bar" id="statsBarEl" aria-hidden="true">
+            <div class="stat-card" id="statTotal"><span class="stat-num" id="statTotalNum">0</span><span class="stat-lbl">Total</span></div>
+            <div class="stat-card accent-green"  id="statDone"><span class="stat-num" id="statDoneNum">0</span><span class="stat-lbl">Completadas hoy</span></div>
+            <div class="stat-card accent-red"    id="statOverdue"><span class="stat-num" id="statOverdueNum">0</span><span class="stat-lbl">Vencidas</span></div>
+            <div class="stat-card accent-yellow" id="statPending"><span class="stat-num" id="statPendingNum">0</span><span class="stat-lbl">Pendientes</span></div>
+        </div>
+
+        <div class="bottom-bar">
+            <button class="danger-btn" type="button" onclick="pedirConfirmacion('todas')"><i data-lucide="trash-2"></i> Borrar todas</button>
+        </div>
+    </main>
+
+    <div class="calendar-panel" id="calendarPanel" aria-label="Calendario de tareas">
+        <div class="cal-drag-handle" id="calDragHandle"><i data-lucide="grip-horizontal"></i></div>
+        <div class="cal-header">
+            <button type="button" onclick="cambiarMes(-1)" aria-label="Mes anterior"><i data-lucide="chevron-left"></i></button>
+            <span id="calTitle"></span>
+            <button type="button" onclick="cambiarMes(1)" aria-label="Mes siguiente"><i data-lucide="chevron-right"></i></button>
+            <button class="cal-close" type="button" onclick="toggleCalendar()" aria-label="Cerrar calendario"><i data-lucide="x"></i></button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-events" id="calEvents" aria-live="polite"></div>
+    </div>
+
+    <button class="cal-fab" id="calFabBtn" type="button" onclick="toggleCalendar()" title="Calendario" aria-label="Abrir calendario">
+        <span class="cal-fab-icon"><i data-lucide="calendar"></i></span>
+    </button>
+
+    <div class="alarm-modal-overlay" id="alarmModalOverlay" role="dialog" aria-modal="true" aria-labelledby="alarmModalTitle">
+        <div class="alarm-modal">
+            <div class="alarm-modal-header">
+                <span class="alarm-modal-icon"><i data-lucide="bell"></i></span>
+                <div>
+                    <h3 class="alarm-modal-title" id="alarmModalTitle">Configurar recordatorio</h3>
+                    <p class="alarm-modal-sub" id="alarmModalTaskName"></p>
+                </div>
+                <button class="alarm-modal-close" type="button" onclick="cerrarModalAlarma()" aria-label="Cerrar recordatorio"><i data-lucide="x"></i></button>
+            </div>
+            <div class="alarm-modal-body">
+                <label class="alarm-label" for="alarmDateInput">Fecha y hora del recordatorio</label>
+                <input type="datetime-local" id="alarmDateInput" class="alarm-datetime-input">
+
+                <div class="alarm-toggle-row">
+                    <span class="alarm-toggle-label">Activar recordatorio</span>
+                    <button class="alarm-toggle-btn" id="alarmToggleBtn" type="button" onclick="toggleAlarmaBtnModal()" aria-label="Activar o desactivar recordatorio">
+                        <span class="alarm-toggle-track"><span class="alarm-toggle-thumb"></span></span>
+                    </button>
+                </div>
+
+                <div class="alarm-sound-row">
+                    <span class="alarm-toggle-label">Sonido de alerta</span>
+                    <button class="alarm-toggle-btn" id="alarmSoundBtn" type="button" onclick="toggleSonidoModal()" aria-label="Activar o desactivar sonido del recordatorio">
+                        <span class="alarm-toggle-track"><span class="alarm-toggle-thumb"></span></span>
+                    </button>
+                </div>
+
+                <p class="alarm-hint" id="alarmHint"></p>
+            </div>
+            <div class="alarm-modal-footer">
+                <button class="alarm-save-btn" type="button" onclick="guardarAlarma()">Guardar recordatorio</button>
+                <button class="alarm-cancel-btn" type="button" onclick="cerrarModalAlarma()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ SIDEBAR BACKDROP (mobile) ══════════ -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="cerrarSidebar()" aria-hidden="true"></div>
+
+    <!-- ══════════ BOTTOM NAVIGATION (mobile only) ══════════ -->
+    <nav class="bottom-nav" id="bottomNav" role="navigation" aria-label="Navegación principal móvil">
+        <button class="bnav-item active" id="bnavHoy" type="button"
+            onclick="bnavSeleccionar('hoy'); filtrarCategoria('todas');" aria-label="Inicio — Todas las tareas">
+            <span class="bnav-icon"><i data-lucide="sun"></i></span>
+            <span class="bnav-label">Hoy</span>
+        </button>
+        <button class="bnav-item" id="bnavAsistente" type="button"
+            onclick="bnavSeleccionar('asistente'); abrirMocoaModal();" aria-label="Asistente IA Mocoa">
+            <span class="bnav-icon">🤖</span>
+            <span class="bnav-label">Asistente</span>
+        </button>
+        <button class="bnav-fab" id="bnavCrear" type="button"
+            onclick="bnavEnfocarInput();" aria-label="Crear nueva tarea">
+            <span aria-hidden="true">＋</span>
+        </button>
+        <button class="bnav-item" id="bnavProgreso" type="button"
+            onclick="bnavSeleccionar('progreso'); abrirProgreso();" aria-label="Mi progreso">
+            <span class="bnav-icon"><i data-lucide="bar-chart-2"></i></span>
+            <span class="bnav-label">Progreso</span>
+        </button>
+        <button class="bnav-item" id="bnavMenu" type="button"
+            onclick="bnavSeleccionar('menu'); toggleSidebar();" aria-label="Abrir menú lateral">
+            <span class="bnav-icon"><i data-lucide="menu"></i></span>
+            <span class="bnav-label">Menú</span>
+        </button>
+    </nav>
+
+    <!-- ══════════ MODAL PROGRESO ══════════ -->
+    <div id="progresoPanel" class="progreso-overlay" role="dialog" aria-modal="true" aria-label="Mi Progreso">
+        <div class="progreso-card">
+            <div class="progreso-header">
+                <h2 class="progreso-titulo">📊 Mi Progreso</h2>
+                <button class="progreso-close" type="button" onclick="cerrarProgreso()" aria-label="Cerrar progreso">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div id="progresoContenido" class="progreso-contenido"></div>
+        </div>
+    </div>
+
+    <div class="alerta-alarma" id="alertaAlarma" role="status" aria-live="assertive">
+        <div class="alerta-alarma-inner">
+            <div class="alerta-ring"><i data-lucide="bell"></i></div>
+            <div class="alerta-texto">
+                <p class="alerta-titulo">¡Recordatorio!</p>
+                <p class="alerta-desc" id="alertaDesc"></p>
+                <p class="alerta-hora" id="alertaHora"></p>
+            </div>
+            <div class="alerta-acciones">
+                <button class="alerta-btn-ok" type="button" onclick="cerrarAlerta()">Entendido</button>
+                <button class="alerta-btn-snooze" type="button" onclick="snoozeAlarma()">+5 min</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="overlay-confirmacion" id="overlayConfirmacion" role="dialog" aria-modal="true" aria-labelledby="textoConfirmacion">
+    <div class="caja-confirmacion">
+        <p id="textoConfirmacion">¿Estás seguro?</p>
+        <button class="confirm-si" type="button" onclick="confirmarAccion(true)">Sí, eliminar</button>
+        <button class="confirm-no" type="button" onclick="confirmarAccion(false)">Cancelar</button>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    
+<div id="modalBienvenida" class="bienvenida-overlay" role="dialog" aria-modal="true" aria-labelledby="bienvenidaTitulo">
+    <div class="bienvenida-card">
+        <div class="bienvenida-deco"></div>
+        <div class="bienvenida-emoji"><i data-lucide="sparkles"></i></div>
+        <h2 class="bienvenida-titulo" id="bienvenidaTitulo">Bienvenido a <span>Gestask AI</span></h2>
+        <p class="bienvenida-sub">Tu espacio ya está listo. Lo que sigue depende de ti.</p>
+        <div class="bienvenida-features">
+            <div class="bienvenida-feat"><span><i data-lucide="target"></i></span><span>Modo Hoy — IA analiza energía + prioridad y elige tus 3–5 tareas clave del día</span></div>
+            <div class="bienvenida-feat"><span><i data-lucide="wand-sparkles"></i></span><span>Subtareas IA — descompone cualquier tarea en pasos concretos con un clic</span></div>
+            <div class="bienvenida-feat"><span><i data-lucide="settings"></i></span><span>API Key de Groq gratis — activa toda la IA sin tarjeta de crédito</span></div>
+        </div>
+        <div class="bienvenida-btns">
+            <button class="bienvenida-tour-btn" type="button" onclick="cerrarBienvenidaIniciarTour()"><i data-lucide="compass"></i> Hacer el recorrido</button>
+            <button class="bienvenida-skip-btn" type="button" onclick="cerrarBienvenida()">Empezar solo</button>
+        </div>
+    </div>
+</div>
+
+<div id="tourOverlay" class="tour-overlay hidden"></div>
+
+<div id="tourTooltip" class="tour-tooltip hidden" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <div class="tour-tooltip-header">
+        <span class="tour-step-badge" id="tourStepBadge">1/6</span>
+        <button class="tour-close-btn" type="button" onclick="cerrarTour()" aria-label="Cerrar recorrido"><i data-lucide="x"></i></button>
+    </div>
+    <div class="tour-tooltip-icon" id="tourIcon">🗂️</div>
+    <h3 class="tour-tooltip-title" id="tourTitle">Título</h3>
+    <p class="tour-tooltip-desc" id="tourDesc">Descripción.</p>
+    <div class="tour-tooltip-nav">
+        <button class="tour-btn tour-prev" id="tourPrevBtn" type="button" onclick="tourAnterior()"><i data-lucide="chevron-left"></i> Anterior</button>
+        <div class="tour-dots" id="tourDots"></div>
+        <button class="tour-btn tour-next" id="tourNextBtn" type="button" onclick="tourSiguiente()">Siguiente <i data-lucide="chevron-right"></i></button>
+    </div>
+</div>
+
+<div id="sugerenciasPanel" class="sugerencias-panel hidden" aria-live="polite">
+    <div class="sugerencias-header">
+        <span class="sugerencias-icon"><i data-lucide="bot"></i></span>
+        <span class="sugerencias-titulo">Sugerencia</span>
+        <button class="sugerencias-close" type="button" onclick="cerrarSugerencia()" aria-label="Cerrar sugerencia"><i data-lucide="x"></i></button>
+    </div>
+    <p class="sugerencias-texto" id="sugerenciasTexto"></p>
+    <button id="sugerenciasCta" class="sugerencias-cta hidden" type="button"></button>
+</div>
+
+<!-- ══════════ MODAL MODO HOY ══════════ -->
+<div id="modoHoyPanel" class="modo-hoy-overlay" role="dialog" aria-modal="true" aria-label="Modo Hoy">
+    <div class="modo-hoy-card">
+        <div class="modo-hoy-header">
+            <div class="modo-hoy-header-info">
+                <h2 class="modo-hoy-titulo-header"><i data-lucide="target"></i> Modo Hoy</h2>
+                <span class="modo-hoy-energia-badge" id="modoHoyEnergia">Normal</span>
+            </div>
+            <button class="modo-hoy-close" type="button" onclick="cerrarModoHoy()" aria-label="Cerrar Modo Hoy"><i data-lucide="x"></i></button>
+        </div>
+        <p class="modo-hoy-subtitulo">Tus tareas más importantes ahora mismo, ordenadas por prioridad e inteligencia de energía.</p>
+        <div id="modoHoyLista" class="modo-hoy-lista"></div>
+        <div class="modo-hoy-footer">
+            <button class="modo-hoy-refresh" type="button" onclick="renderModoHoy()"><i data-lucide="rotate-ccw"></i> Recalcular</button>
+            <button class="modo-hoy-ver-todas" type="button" onclick="cerrarModoHoy()">Ver todas →</button>
+        </div>
+    </div>
+</div>
+
+<div id="descModal" class="desc-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="descModalTitle">
+    <div class="desc-modal-card">
+        <div class="desc-modal-header">
+            <span><i data-lucide="file-text"></i></span>
+            <h3 class="desc-modal-titulo" id="descModalTitle">Descripción de la tarea</h3>
+            <button class="alarm-modal-close" type="button" onclick="cerrarDescModal()" aria-label="Cerrar descripción"><i data-lucide="x"></i></button>
+        </div>
+        <p class="desc-modal-nombre" id="descModalNombre"></p>
+        <textarea id="descModalInput" class="desc-modal-textarea" placeholder="Escribe una descripción opcional..."></textarea>
+        <div class="desc-modal-footer">
+            <button class="alarm-save-btn" type="button" onclick="guardarDescripcion()">Guardar</button>
+            <button class="alarm-cancel-btn" type="button" onclick="cerrarDescModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ MODAL MOCOA IA ══════════ -->
+<div id="mocoaModal" class="mocoa-overlay" role="dialog" aria-modal="true" aria-label="Asistente Mocoa AI">
+    <div class="mocoa-panel">
+        <div id="coachBox">
+            <div class="coach-header-row">
+                <div class="coach-header-main">
+                    <h3><i data-lucide="bot"></i> Mocoa AI</h3>
+                    <p class="coach-header-subtitle">Tu acompañante de enfoque hoy</p>
+                    <span class="coach-status-dot" aria-label="Mocoa en línea">● En línea</span>
+                </div>
+                <div class="coach-header-actions">
+                    <button class="coach-expand-btn" type="button" onclick="expandirCoach()" title="Abrir modo enfoque IA" aria-label="Abrir modo enfoque IA"><i data-lucide="maximize-2"></i></button>
+                    <button class="coach-clear-btn" type="button" onclick="limpiarChatCoach()" title="Limpiar chat" aria-label="Limpiar chat"><i data-lucide="rotate-ccw"></i></button>
+                    <button class="coach-clear-btn mocoa-close-btn" type="button" onclick="cerrarMocoaModal()" title="Cerrar asistente" aria-label="Cerrar asistente"><i data-lucide="x"></i></button>
+                </div>
+            </div>
+
+            <!-- ── Selector de tono ── -->
+            <div class="coach-tone-row">
+                <span class="coach-tone-label">Tono:</span>
+                <select id="coachToneSelect" class="coach-tone-select" aria-label="Tono del coach">
+                    <option value="directo">Directo</option>
+                    <option value="motivador">Motivador</option>
+                    <option value="estrategico">Estratégico</option>
+                </select>
+            </div>
+
+            <div id="coachMensajes" class="coach-chat-messages" aria-live="polite"></div>
+
+            <!-- ── Acciones dinámicas ── -->
+            <div class="coach-quick-btns" id="coachDynamicActions"></div>
+
+            <!-- ── Chips contextuales ── -->
+            <div class="coach-context-chips">
+                <button type="button" class="coach-context-chip" onclick="enviarRapido('Hoy me siento…')">Hoy me siento…</button>
+                <button type="button" class="coach-context-chip" onclick="enviarRapido('Tengo 30 min')">Tengo 30 min</button>
+                <button type="button" class="coach-context-chip" onclick="enviarRapido('Quiero priorizar')">Quiero priorizar</button>
+            </div>
+
+            <div class="coach-chat-input-row">
+                <input
+                    type="text"
+                    id="coachInput"
+                    placeholder="Escríbeme algo..."
+                    class="coach-input"
+                    onkeypress="if(event.key==='Enter')enviarMensajeCoach()"
+                    maxlength="300"
+                    aria-label="Mensaje para el Coach IA"
+                >
+                <button class="coach-send-btn" type="button" onclick="enviarMensajeCoach()" title="Enviar" aria-label="Enviar mensaje al Coach IA">
+                    <span class="coach-send-ico"><i data-lucide="send"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ MODAL CONFIGURACIÓN ══════════ -->
+<div id="configModal" class="config-overlay" role="dialog" aria-modal="true" aria-labelledby="configModalTitle">
+    <div class="config-panel">
+        <div class="config-header">
+            <h2 class="config-title" id="configModalTitle"><i data-lucide="settings"></i> Configuración</h2>
+            <button class="config-close-btn" type="button" onclick="cerrarConfigModal()" aria-label="Cerrar configuración"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="config-body">
+            <!-- Sección IA -->
+            <div class="config-section">
+                <div class="config-section-head">
+                    <span class="config-section-ico"><i data-lucide="bot"></i></span>
+                    <div>
+                        <h3 class="config-section-title">Asistente IA</h3>
+                        <p class="config-section-sub">Conecta Mocoa con la API de Groq (gratis)</p>
+                    </div>
+                </div>
+                <label class="config-label" for="geminiApiKey">API Key de Groq</label>
+                <div class="coach-apikey-row config-apikey-row">
+                    <input type="password" id="geminiApiKey" placeholder="Pega tu API Key aquí..." class="coach-apikey-input" oninput="guardarApiKey()" aria-label="API Key de Groq">
+                    <button class="coach-apikey-toggle" type="button" onclick="toggleVerApiKey()" title="Mostrar/ocultar key" aria-label="Mostrar u ocultar API Key"><i data-lucide="eye"></i></button>
+                </div>
+                <p class="config-hint">Obtén tu key gratis en <strong>console.groq.com</strong> → API Keys</p>
+            </div>
+
+            <!-- Separador -->
+            <div class="config-divider"></div>
+
+            <!-- Sección Sonidos -->
+            <div class="config-section">
+                <div class="config-section-head">
+                    <span class="config-section-ico"><i data-lucide="bell"></i></span>
+                    <div>
+                        <h3 class="config-section-title">Sonido de notificación</h3>
+                        <p class="config-section-sub">Elige cómo suenan tus recordatorios de tareas</p>
+                    </div>
+                </div>
+
+                <div class="config-sound-options" id="configSoundOptions">
+                    <label class="config-sound-option" for="notifSoundSuave">
+                        <input type="radio" name="notifSound" id="notifSoundSuave" value="suave" onchange="seleccionarSonidoNotificacion('suave')">
+                        <div class="config-sound-main">
+                            <span class="config-sound-name">Suave</span>
+                            <span class="config-sound-desc">Campana delicada, ideal para foco</span>
+                        </div>
+                        <button class="config-sound-preview-btn" type="button" onclick="previsualizarSonidoNotificacion('suave', event)">Previsualizar</button>
+                    </label>
+
+                    <label class="config-sound-option" for="notifSoundClasico">
+                        <input type="radio" name="notifSound" id="notifSoundClasico" value="clasico" onchange="seleccionarSonidoNotificacion('clasico')">
+                        <div class="config-sound-main">
+                            <span class="config-sound-name">Clásico</span>
+                            <span class="config-sound-desc">Notificación estándar y clara</span>
+                        </div>
+                        <button class="config-sound-preview-btn" type="button" onclick="previsualizarSonidoNotificacion('clasico', event)">Previsualizar</button>
+                    </label>
+
+                    <label class="config-sound-option" for="notifSoundEnergetico">
+                        <input type="radio" name="notifSound" id="notifSoundEnergetico" value="energetico" onchange="seleccionarSonidoNotificacion('energetico')">
+                        <div class="config-sound-main">
+                            <span class="config-sound-name">Energético</span>
+                            <span class="config-sound-desc">Chime motivador para activar impulso</span>
+                        </div>
+                        <button class="config-sound-preview-btn" type="button" onclick="previsualizarSonidoNotificacion('energetico', event)">Previsualizar</button>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Separador -->
+            <div class="config-divider"></div>
+
+            <!-- Sección Perfil -->
+            <div class="config-section">
+                <div class="config-section-head">
+                    <span class="config-section-ico"><i data-lucide="user"></i></span>
+                    <div>
+                        <h3 class="config-section-title">Perfil de usuario</h3>
+                        <p class="config-section-sub">Personaliza tu nombre en la app</p>
+                    </div>
+                </div>
+                <label class="config-label" for="configNombreInput">Nombre visible</label>
+                <input type="text" id="configNombreInput" class="config-input" placeholder="Tu nombre..." maxlength="32" aria-label="Nombre de usuario">
+                <button class="config-save-btn" type="button" onclick="guardarPerfil()">Guardar perfil</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════ SPOTLIGHT TOUR (v2) ══════════ -->
+<div id="spotTourOverlay" class="spot-overlay" aria-hidden="true">
+    <svg id="spotSvg" class="spot-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <mask id="spotMaskDef">
+                <!-- Fondo blanco = opaco. Negro = hueco transparente. -->
+                <rect width="100%" height="100%" fill="white"/>
+                <rect id="spotHole" x="0" y="0" width="0" height="0" rx="14" ry="14" fill="black"/>
+            </mask>
+        </defs>
+        <rect class="spot-bg-rect" width="100%" height="100%" mask="url(#spotMaskDef)"/>
+    </svg>
+</div>
+
+<div id="spotTourCard" class="spot-card" role="dialog" aria-modal="true" aria-labelledby="spotCardTitle">
+    <div class="spot-card-top">
+        <span class="spot-card-badge" id="spotBadge">1 / 10</span>
+        <button class="spot-card-skip" type="button" onclick="spotCerrar()" aria-label="Cerrar tour"><i data-lucide="x"></i></button>
+    </div>
+    <div class="spot-card-icon" id="spotIcon">🗂️</div>
+    <h3 class="spot-card-title" id="spotCardTitle">Título</h3>
+    <p class="spot-card-desc" id="spotDesc">Descripción del paso.</p>
+    <div class="spot-card-nav">
+        <button class="spot-btn spot-btn-prev" id="spotPrevBtn" type="button" onclick="spotAnterior()"><i data-lucide="chevron-left"></i><span class="spot-btn-text"> Anterior</span></button>
+        <div class="spot-dots" id="spotDots"></div>
+        <button class="spot-btn spot-btn-next" id="spotNextBtn" type="button" onclick="spotSiguiente()"><span class="spot-btn-text">Siguiente</span> →</button>
+    </div>
+    <button class="spot-card-saltar" type="button" onclick="spotCerrar()">Saltar tour</button>
+</div>
+
+<!-- ══ MODAL ATAJOS DE TECLADO ══ -->
+<div id="atajosModal" class="ks-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="atajosModalTitle" style="display:none">
+    <div class="ks-modal-card">
+        <div class="ks-modal-header">
+            <h2 class="ks-modal-title" id="atajosModalTitle"><i data-lucide="keyboard"></i> Atajos de teclado</h2>
+            <button class="ks-modal-close" type="button" onclick="cerrarAtajosModal()" aria-label="Cerrar">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="ks-modal-body">
+            <div class="ks-grid">
+                <div class="ks-row"><kbd class="ks-key">N</kbd><span>Nueva tarea — enfocar el input</span></div>
+                <div class="ks-row"><kbd class="ks-key">/</kbd><span>Buscar tarea</span></div>
+                <div class="ks-row"><kbd class="ks-key">A</kbd><span>Abrir Asistente IA</span></div>
+                <div class="ks-row"><kbd class="ks-key">H</kbd><span>Modo Hoy</span></div>
+                <div class="ks-row"><kbd class="ks-key">G</kbd><span>Panel de Progreso</span></div>
+                <div class="ks-row"><kbd class="ks-key">?</kbd><span>Esta ayuda</span></div>
+                <div class="ks-row"><kbd class="ks-key">Esc</kbd><span>Cerrar panel o modal abierto</span></div>
+            </div>
+            <p class="ks-modal-note">Los atajos no se activan mientras escribes en un campo de texto.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ══ ONBOARDING TIP (primer uso) ══ -->
+<div id="onboardingTip" class="ks-onboarding" role="status" aria-live="polite" style="display:none">
+    <span><i data-lucide="rocket"></i> Tip: usa <kbd>N</kbd> para crear tareas más rápido</span>
+    <button type="button" onclick="cerrarOnboarding()" aria-label="Cerrar tip"><i data-lucide="x"></i></button>
+</div>
+
+<script src="script.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
